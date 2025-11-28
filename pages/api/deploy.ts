@@ -4,6 +4,12 @@ import fs from 'fs';
 import path from 'path';
 import AdmZip from 'adm-zip';
 
+// Validate VERCEL_TOKEN at module load time
+if (!process.env.VERCEL_TOKEN) {
+  console.error('❌ CRITICAL: VERCEL_TOKEN environment variable is not set');
+  console.error('Please add VERCEL_TOKEN to your .env.local file or Vercel dashboard');
+}
+
 export const config = {
   api: {
     bodyParser: false,
@@ -19,6 +25,23 @@ type VercelFile = {
   file: string;
   data: string;
 };
+
+/**
+ * Validates and retrieves the VERCEL_TOKEN from environment variables
+ * @throws Error if token is not configured
+ */
+function getVercelToken(): string {
+  const token = process.env.VERCEL_TOKEN;
+  
+  if (!token || token.trim() === '') {
+    throw new Error(
+      'VERCEL_TOKEN is not configured. Please add it to your .env.local file or Vercel dashboard. ' +
+      'Get your token from: https://vercel.com/account/tokens'
+    );
+  }
+  
+  return token.trim();
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -101,12 +124,16 @@ export default async function handler(
 
     console.log(`📦 Total files to deploy: ${vercelFiles.length}`);
 
-    // Deploy to Vercel
-    const vercelToken = process.env.VERCEL_TOKEN;
-    
-    if (!vercelToken) {
-      console.error('❌ VERCEL_TOKEN not configured');
-      return res.status(500).json({ error: 'Vercel token not configured' });
+    // Deploy to Vercel - Explicitly use VERCEL_TOKEN from environment
+    let vercelToken: string;
+    try {
+      vercelToken = getVercelToken();
+      console.log('✅ Using VERCEL_TOKEN from environment variables');
+    } catch (error) {
+      console.error('❌ VERCEL_TOKEN validation failed:', error);
+      return res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Vercel token not configured' 
+      });
     }
 
     const projectName = `snapship-${Date.now().toString(36)}`;
@@ -120,10 +147,13 @@ export default async function handler(
     };
 
     console.log('🚀 Deploying to Vercel...');
+    console.log('📡 Using Vercel API endpoint: https://api.vercel.com/v13/deployments');
 
+    // Make authenticated request to Vercel API using manually provided token
     const vercelResponse = await fetch('https://api.vercel.com/v13/deployments', {
       method: 'POST',
       headers: {
+        // Explicitly use VERCEL_TOKEN from environment variables (not system-injected)
         Authorization: `Bearer ${vercelToken}`,
         'Content-Type': 'application/json',
       },
