@@ -1,0 +1,18 @@
+{
+  "env": {
+    "GITHUB_CLIENT_ID": "@github-client-id",
+    "GITHUB_CLIENT_SECRET": "@github-client-secret",
+    "NEXTAUTH_SECRET": "@nextauth-secret",
+    "NEXTAUTH_URL": "@nextauth-url",
+    "VERCEL_TOKEN": "@vercel-token"
+  },
+  "build": {
+    "env": {
+      "GITHUB_CLIENT_ID": "@github-client-id",
+      "GITHUB_CLIENT_SECRET": "@github-client-secret",
+      "NEXTAUTH_SECRET": "@nextauth-secret",
+      "NEXTAUTH_URL": "@nextauth-url",
+      "VERCEL_TOKEN": "@vercel-token"
+    }
+  }
+}

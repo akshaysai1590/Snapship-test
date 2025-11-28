@@ -1,11 +1,22 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
 
+// Validate required environment variables
+if (!process.env.GITHUB_CLIENT_ID) {
+  throw new Error('GITHUB_CLIENT_ID is not set');
+}
+if (!process.env.GITHUB_CLIENT_SECRET) {
+  throw new Error('GITHUB_CLIENT_SECRET is not set');
+}
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET is not set');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GithubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -25,10 +36,13 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // Use NEXTAUTH_URL if available, otherwise use baseUrl
+      const base = process.env.NEXTAUTH_URL || baseUrl;
+      
       // Always redirect to dashboard after login
       if (url.startsWith('/')) return url === '/dashboard' ? url : '/dashboard';
-      if (url.startsWith(baseUrl)) return `${baseUrl}/dashboard`;
-      return baseUrl + '/dashboard';
+      if (url.startsWith(base)) return `${base}/dashboard`;
+      return base + '/dashboard';
     },
   },
   pages: {
@@ -36,6 +50,17 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+  },
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
 };
 
