@@ -540,8 +540,6 @@ export default function Dashboard() {
                 <p className="text-white">{errorMessage}</p>
               </div>
             )}
-          </div>
-
                   </div>
                 </>
               )}
