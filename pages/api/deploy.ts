@@ -147,6 +147,7 @@ export default async function handler(
     const deploymentPayload = {
       name: projectName,
       files: vercelFiles,
+      public: true,
       projectSettings: {
         framework: null,
       },
