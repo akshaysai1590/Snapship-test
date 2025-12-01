@@ -3,3 +3,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;900&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary: #060010;
+  --bg-secondary: #0f0820;
+  --purple-primary: #7c3aed;
+  --purple-secondary: #5227ff;
+  --text-primary: #ffffff;
+  --text-secondary: #ccc;
+  --border-color: rgba(255, 255, 255, 0.07);
+}
+
+body {
+  font-family: 'Figtree', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.1) saturate(1.2);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes border-dance {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}

@@ -6,14 +6,15 @@ export default function Login() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // If already authenticated, redirect to dashboard
+    setMounted(true);
+    
     if (status === 'authenticated') {
       router.replace('/dashboard');
     }
 
-    // Check for error in URL
     if (router.query.error) {
       setError('Authentication failed. Please check your GitHub OAuth configuration.');
     }
@@ -36,61 +37,66 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0f3d4d]">
-      <style jsx>{`
-        @keyframes wave1 {
-          0%, 100% { transform: translateX(0) translateY(0); }
-          50% { transform: translateX(-25px) translateY(-10px); }
-        }
-        @keyframes wave2 {
-          0%, 100% { transform: translateX(0) translateY(0); }
-          50% { transform: translateX(25px) translateY(-15px); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .wave-1 { animation: wave1 4s ease-in-out infinite; }
-        .wave-2 { animation: wave2 5s ease-in-out infinite; }
-        .logo-float { animation: float 4s ease-in-out infinite; }
-      `}</style>
-
-      {/* Animated wave background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <svg className="absolute bottom-0 w-full wave-1" viewBox="0 0 1440 320" preserveAspectRatio="none">
-          <path
-            fill="#1a5566"
-            fillOpacity="0.3"
-            d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,138.7C960,139,1056,117,1152,106.7C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-          ></path>
-        </svg>
-        <svg className="absolute bottom-0 w-full wave-2" viewBox="0 0 1440 320" preserveAspectRatio="none">
-          <path
-            fill="#2a6b7d"
-            fillOpacity="0.5"
-            d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-          ></path>
-        </svg>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: '#060010' }}>
+      {/* Gradient blur background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(109, 40, 217, 0.2) 50%, transparent 70%)',
+            filter: 'blur(80px)',
+          }}
+        />
       </div>
 
       {/* Login card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
-        <div className="bg-[#1a2f3a] rounded-2xl shadow-2xl p-10">
+      <div className={`relative z-10 w-full max-w-md mx-4 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
+        <div 
+          className="rounded-3xl shadow-2xl p-10 backdrop-blur-xl"
+          style={{
+            background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02))',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
           <div className="text-center mb-8">
+            {/* Logo */}
             <div className="flex justify-center mb-6">
-              <img 
-                src="/snapship-logo.jpg" 
-                alt="Snapship Logo" 
-                className="w-32 h-32 logo-float"
-              />
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed, #182fff)',
+                  boxShadow: '0 0 40px rgba(124, 58, 237, 0.3)',
+                }}
+              >
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome to Snapship
+            
+            <h1 
+              className="text-4xl font-semibold mb-3"
+              style={{
+                color: '#fff',
+                letterSpacing: '-1px',
+              }}
+            >
+              Welcome Back
             </h1>
+            <p style={{ color: '#ccc', fontSize: '16px' }}>
+              Sign in to continue to Snapship
+            </p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-200 text-sm">
+            <div 
+              className="mb-6 p-4 rounded-xl text-sm"
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#fca5a5',
+              }}
+            >
               {error}
             </div>
           )}
@@ -98,13 +104,32 @@ export default function Login() {
           <button
             onClick={handleGitHubSignIn}
             disabled={status === 'loading'}
-            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#0f3d4d] text-white rounded-lg font-semibold hover:bg-[#1a5566] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            style={{
+              background: 'linear-gradient(135deg, #7c3aed, #182fff)',
+              color: '#fff',
+              boxShadow: '0 0 40px rgba(124, 58, 237, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1)',
+            }}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
             </svg>
-            {status === 'loading' ? 'Loading...' : 'Login with GitHub'}
+            {status === 'loading' ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Loading...
+              </span>
+            ) : (
+              'Continue with GitHub'
+            )}
           </button>
+
+          <p className="mt-6 text-center text-sm" style={{ color: '#999' }}>
+            By continuing, you agree to our Terms of Service
+          </p>
         </div>
       </div>
     </div>
