@@ -148,8 +148,13 @@ export default async function handler(
       name: projectName,
       files: vercelFiles,
       public: true,
+      target: 'production',
       projectSettings: {
         framework: null,
+        devCommand: null,
+        installCommand: null,
+        buildCommand: null,
+        outputDirectory: null,
       },
     };
 
@@ -180,6 +185,33 @@ export default async function handler(
     const deploymentUrl = `https://${vercelData.url}`;
     logs.push('✅ Deployment successful!');
     console.log('✅ Deployment successful:', deploymentUrl);
+
+    // Update project settings to disable password protection
+    if (vercelData.projectId) {
+      try {
+        const projectUpdateResponse = await fetch(
+          `https://api.vercel.com/v9/projects/${vercelData.projectId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${vercelToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              passwordProtection: null,
+              ssoProtection: null,
+            }),
+          }
+        );
+        
+        if (projectUpdateResponse.ok) {
+          logs.push('✅ Disabled password protection');
+          console.log('✅ Disabled password protection');
+        }
+      } catch (error) {
+        console.log('⚠️ Could not update project settings:', error);
+      }
+    }
 
     // Clean up uploaded file
     fs.unlinkSync(file.filepath);
