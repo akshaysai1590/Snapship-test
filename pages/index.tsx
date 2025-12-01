@@ -65,7 +65,7 @@ export default function Home() {
           <div className="bg-[#1a2f3a]/50 p-6 rounded-lg border border-[#2a6b7d]">
             <div className="text-4xl mb-4">⚡</div>
             <h3 className="text-xl font-bold text-white mb-2">Powered by Vercel</h3>
-            <p className="text-gray-300">Built on top of Vercel's powerful infrastructure</p>
+            <p className="text-gray-300">Built on top of Vercel&apos;s powerful infrastructure</p>
           </div>
         </div>
       </div>
