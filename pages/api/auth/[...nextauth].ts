@@ -1,22 +1,11 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
 
-// Validate required environment variables
-if (!process.env.GITHUB_CLIENT_ID) {
-  throw new Error('GITHUB_CLIENT_ID is not set');
-}
-if (!process.env.GITHUB_CLIENT_SECRET) {
-  throw new Error('GITHUB_CLIENT_SECRET is not set');
-}
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error('NEXTAUTH_SECRET is not set');
-}
-
-export const authOptions: NextAuthOptions = {
+export default NextAuth({
   providers: [
     GithubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -36,22 +25,19 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Use NEXTAUTH_URL if available, otherwise use baseUrl
-      const base = process.env.NEXTAUTH_URL || baseUrl;
-      
-      // Always redirect to dashboard after login
-      if (url.startsWith('/')) return url === '/dashboard' ? url : '/dashboard';
-      if (url.startsWith(base)) return `${base}/dashboard`;
-      return base + '/dashboard';
+      // Always redirect to dashboard after successful login
+      if (url.includes('/dashboard')) return url;
+      if (url.startsWith('/')) return '/dashboard';
+      if (new URL(url).origin === baseUrl) return '/dashboard';
+      return '/dashboard';
     },
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   session: {
     strategy: 'jwt',
   },
-  // Remove custom cookie config to use NextAuth defaults for production
-};
-
-export default NextAuth(authOptions);
+  debug: process.env.NODE_ENV === 'development',
+});

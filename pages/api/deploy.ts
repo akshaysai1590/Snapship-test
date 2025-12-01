@@ -19,6 +19,7 @@ export const config = {
 type ResponseData = {
   url?: string;
   error?: string;
+  logs?: string[];
 };
 
 type VercelFile = {
@@ -52,6 +53,8 @@ export default async function handler(
   }
 
   try {
+    const logs: string[] = [];
+    
     const form = new IncomingForm({
       uploadDir: path.join(process.cwd(), 'uploads'),
       keepExtensions: true,
@@ -91,6 +94,7 @@ export default async function handler(
       return res.status(400).json({ error: 'index.html not found in root of zip file' });
     }
 
+    logs.push('✅ index.html found in root');
     console.log('✅ index.html found in root');
 
     // Prepare files for Vercel deployment
@@ -118,16 +122,21 @@ export default async function handler(
           file: fileName,
           data: fileContent,
         });
-        console.log('📄 Adding file:', fileName, isTextFile ? '(text)' : '(binary)');
+        const logMessage = `📄 Adding file: ${fileName} ${isTextFile ? '(text)' : '(binary)'}`;
+        logs.push(logMessage);
+        console.log(logMessage);
       }
     });
 
-    console.log(`📦 Total files to deploy: ${vercelFiles.length}`);
+    const filesLog = `📦 Total files to deploy: ${vercelFiles.length}`;
+    logs.push(filesLog);
+    console.log(filesLog);
 
     // Deploy to Vercel - Explicitly use VERCEL_TOKEN from environment
     let vercelToken: string;
     try {
       vercelToken = getVercelToken();
+      logs.push('✅ Using VERCEL_TOKEN from environment variables');
       console.log('✅ Using VERCEL_TOKEN from environment variables');
     } catch (error) {
       console.error('❌ VERCEL_TOKEN validation failed:', error);
@@ -146,6 +155,7 @@ export default async function handler(
       },
     };
 
+    logs.push('🚀 Deploying to Vercel...');
     console.log('🚀 Deploying to Vercel...');
     console.log('📡 Using Vercel API endpoint: https://api.vercel.com/v13/deployments');
 
@@ -170,6 +180,7 @@ export default async function handler(
     }
 
     const deploymentUrl = `https://${vercelData.url}`;
+    logs.push('✅ Deployment successful!');
     console.log('✅ Deployment successful:', deploymentUrl);
 
     // Clean up uploaded file
@@ -177,6 +188,7 @@ export default async function handler(
 
     return res.status(200).json({
       url: deploymentUrl,
+      logs,
     });
   } catch (error) {
     console.error('❌ Deployment error:', error);
