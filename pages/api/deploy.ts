@@ -55,16 +55,13 @@ export default async function handler(
   try {
     const logs: string[] = [];
     
+    // Use /tmp directory which is writable in Vercel serverless functions
+    const uploadDir = '/tmp';
+    
     const form = new IncomingForm({
-      uploadDir: path.join(process.cwd(), 'uploads'),
+      uploadDir: uploadDir,
       keepExtensions: true,
     });
-
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
 
     const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
