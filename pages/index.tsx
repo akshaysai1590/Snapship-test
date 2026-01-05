@@ -132,7 +132,7 @@ export default function Home() {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="p-6 rounded-2xl transition-all duration-300 hover:scale-105"
+                className="p-6 rounded-2xl transition-all duration-300 hover:scale-105 hover:border-purple-500/30"
                 style={{
                   background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
                   border: '1px solid rgba(255, 255, 255, 0.07)',
@@ -145,6 +145,13 @@ export default function Home() {
                 <p style={{ color: '#ccc', fontSize: '14px' }}>{feature.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-20 pt-8 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.07)' }}>
+            <p className="text-sm" style={{ color: '#666' }}>
+              © {new Date().getFullYear()} Snapship. Built with ❤️ for developers.
+            </p>
           </div>
         </div>
       </div>

@@ -52,8 +52,11 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let uploadedFilePath: string | null = null;
+
   try {
     const logs: string[] = [];
+    logs.push('📦 Preparing deployment...');
     
     // Use /tmp directory which is writable in Vercel serverless functions
     const uploadDir = '/tmp';
@@ -61,11 +64,18 @@ export default async function handler(
     const form = new IncomingForm({
       uploadDir: uploadDir,
       keepExtensions: true,
+      maxFileSize: 50 * 1024 * 1024, // 50MB limit
     });
 
     const [fields, files] = await new Promise<[any, any]>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
+        if (err) {
+          if (err.message.includes('maxFileSize')) {
+            reject(new Error('File size exceeds 50MB limit'));
+          } else {
+            reject(err);
+          }
+        }
         resolve([fields, files]);
       });
     });
@@ -73,8 +83,17 @@ export default async function handler(
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
 
     if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: 'No file uploaded. Please select a ZIP file.' });
     }
+
+    uploadedFilePath = file.filepath;
+
+    // Validate file extension
+    if (!file.originalFilename?.toLowerCase().endsWith('.zip')) {
+      return res.status(400).json({ error: 'Invalid file type. Please upload a ZIP file.' });
+    }
+
+    logs.push('🔍 Extracting zip file...');
 
     // Extract and validate zip file
     console.log('📦 Extracting zip file:', file.originalFilename);
@@ -214,7 +233,9 @@ export default async function handler(
     }
 
     // Clean up uploaded file
-    fs.unlinkSync(file.filepath);
+    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+      fs.unlinkSync(uploadedFilePath);
+    }
 
     return res.status(200).json({
       url: deploymentUrl,
@@ -222,8 +243,35 @@ export default async function handler(
     });
   } catch (error) {
     console.error('❌ Deployment error:', error);
+    
+    // Clean up uploaded file on error
+    if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+      try {
+        fs.unlinkSync(uploadedFilePath);
+      } catch (cleanupError) {
+        console.error('Failed to cleanup uploaded file:', cleanupError);
+      }
+    }
+
+    // Provide user-friendly error messages
+    let errorMessage = 'Deployment failed. Please try again.';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('VERCEL_TOKEN')) {
+        errorMessage = 'Server configuration error. Please contact support.';
+      } else if (error.message.includes('index.html')) {
+        errorMessage = error.message;
+      } else if (error.message.includes('scope') || error.message.includes('authorized')) {
+        errorMessage = 'Vercel token permissions error. Please update your Vercel token with full account access.';
+      } else if (error.message.includes('File size')) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Deployment failed',
+      error: errorMessage,
     });
   }
 }
