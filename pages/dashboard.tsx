@@ -22,7 +22,37 @@ export default function Dashboard() {
     if (status === 'unauthenticated') {
       router.replace('/login');
     }
+    
+    // Load deployment history from localStorage
+    const savedHistory = localStorage.getItem('snapship_deployments');
+    const savedCount = localStorage.getItem('snapship_deployment_count');
+    
+    if (savedHistory) {
+      try {
+        setDeploymentHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Failed to parse deployment history:', e);
+      }
+    }
+    
+    if (savedCount) {
+      setDeploymentCount(parseInt(savedCount, 10) || 0);
+    }
   }, [status, router]);
+
+  // Save deployment history to localStorage whenever it changes
+  useEffect(() => {
+    if (deploymentHistory.length > 0) {
+      localStorage.setItem('snapship_deployments', JSON.stringify(deploymentHistory));
+    }
+  }, [deploymentHistory]);
+
+  // Save deployment count to localStorage whenever it changes
+  useEffect(() => {
+    if (deploymentCount > 0) {
+      localStorage.setItem('snapship_deployment_count', deploymentCount.toString());
+    }
+  }, [deploymentCount]);
 
   if (status === 'loading') {
     return (
